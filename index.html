@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>🛒 Einkauf</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- ═══════════════ PRINT ═══════════════ -->
+<style>
+@media print{
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:210mm;font-family:'Helvetica Neue',Arial,sans-serif;color:#000;background:#fff;}
+  .app{display:none!important;}
+  .print-page{display:block!important;padding:16mm 14mm 12mm;}
+  .print-header{border-bottom:2.5px solid #000;padding-bottom:9px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-end;}
+  .print-logo{font-size:21pt;font-weight:800;letter-spacing:-.5px;}
+  .print-meta{font-size:8pt;color:#555;text-align:right;line-height:1.7;}
+  .print-summary{display:flex;gap:16px;margin-bottom:16px;}
+  .print-summary-box{border:1px solid #ddd;border-radius:5px;padding:6px 14px;text-align:center;}
+  .print-summary-box strong{display:block;font-size:15pt;font-weight:800;line-height:1.2;}
+  .print-summary-box span{font-size:7.5pt;color:#777;text-transform:uppercase;letter-spacing:.5px;}
+  .print-cat-title{font-size:7pt;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#555;border-top:1px solid #e0e0e0;padding:7px 0 4px;margin-top:13px;}
+  .print-cat-title:first-of-type{margin-top:0;border-top:none;}
+  table{width:100%;border-collapse:collapse;margin-top:3px;}
+  th{font-size:6.5pt;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:#999;border-bottom:1px solid #e8e8e8;padding:4px 6px;text-align:left;}
+  th.c-chk,th.c-qty{text-align:center;width:44px;}
+  td{font-size:9.5pt;padding:5.5px 6px;border-bottom:1px solid #f3f3f3;vertical-align:middle;}
+  td.c-icon{width:24px;padding-right:2px;font-size:13pt;}
+  td.c-chk,td.c-qty{text-align:center;font-weight:700;}
+  tr:last-child td{border-bottom:none;}
+  .chk-circle{display:inline-block;width:13px;height:13px;border:1.5px solid #bbb;border-radius:3px;vertical-align:middle;}
+  .chk-done{background:#111;border-color:#111;}
+  .print-footer{margin-top:20px;border-top:1px solid #e8e8e8;padding-top:7px;font-size:7pt;color:#aaa;display:flex;justify-content:space-between;}
+}
+@media screen{.print-page{display:none;}}
+</style>
+
+<!-- ═══════════════ APP ═══════════════ -->
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+:root{
+  --a:#16a34a;--a2:#22c55e;--danger:#ef4444;
+  --bg:#f5f7fa;--bg2:#fff;--bg3:#eef0f4;
+  --tx:#111827;--tx2:#4b5563;--tx3:#9ca3af;--bd:#e5e7eb;
+  --sh:0 2px 12px rgba(0,0,0,.07);--shl:0 8px 32px rgba(0,0,0,.12);
+  --rsm:14px;--rxs:10px;
+  --tr:all .2s cubic-bezier(.4,0,.2,1);
+  --sp:all .32s cubic-bezier(.34,1.56,.64,1);
+}
+body{font-family:'Sora',-apple-system,sans-serif;background:var(--bg);color:var(--tx);height:100dvh;overflow:hidden;position:fixed;width:100%;}
+.app{height:100dvh;display:flex;flex-direction:column;max-width:480px;margin:0 auto;background:var(--bg);overflow:hidden;}
+
+/* HEADER */
+.header{padding:14px 18px 12px;padding-top:calc(14px + env(safe-area-inset-top));background:var(--bg2);border-bottom:1px solid var(--bd);z-index:10;}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;}
+.app-title{font-size:24px;font-weight:800;letter-spacing:-.5px;}
+.app-title span{color:var(--a);}
+.icon-btn{width:40px;height:40px;border-radius:12px;border:1.5px solid var(--bd);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:var(--tr);position:relative;overflow:hidden;}
+.icon-btn:active{transform:scale(.9);}
+.cart-badge{position:absolute;top:-5px;right:-5px;background:var(--a);color:#fff;font-size:9px;font-weight:800;width:17px;height:17px;border-radius:50%;display:none;align-items:center;justify-content:center;border:2px solid var(--bg2);}
+@keyframes badgeWobble{0%{transform:scale(1) rotate(0)}20%{transform:scale(1.45) rotate(-14deg)}45%{transform:scale(1.2) rotate(10deg)}65%{transform:scale(1.32) rotate(-7deg)}82%{transform:scale(1.1) rotate(4deg)}100%{transform:scale(1) rotate(0)}}
+.cart-badge.wobble{animation:badgeWobble .5s ease;}
+
+/* SEARCH */
+.search-wrap{position:relative;}
+.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--tx3);pointer-events:none;}
+.search-input{width:100%;padding:12px 14px 12px 42px;background:var(--bg3);border:1.5px solid transparent;border-radius:var(--rsm);color:var(--tx);font-family:'Sora',sans-serif;font-size:15px;outline:none;transition:var(--tr);}
+.search-input:focus{border-color:var(--a);background:#fff;}
+.search-input::placeholder{color:var(--tx3);}
+
+/* CHIPS */
+.chips-wrap{display:flex;gap:7px;padding:10px 18px 0;overflow-x:auto;scrollbar-width:none;background:var(--bg2);}
+.chips-wrap::-webkit-scrollbar{display:none;}
+.chip{flex-shrink:0;padding:6px 13px;border-radius:100px;border:1.5px solid var(--bd);background:var(--bg3);color:var(--tx2);font-family:'Sora',sans-serif;font-size:11.5px;font-weight:600;cursor:pointer;transition:var(--tr);white-space:nowrap;}
+.chip.active{background:var(--a);border-color:var(--a);color:#fff;}
+.chip:active{transform:scale(.94);}
+
+/* TABS */
+.tabs{display:flex;background:var(--bg2);border-bottom:1.5px solid var(--bd);padding:0 8px;gap:2px;}
+.tab{flex:1;padding:10px 4px;border:none;background:none;color:var(--tx3);font-family:'Sora',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:var(--tr);border-radius:var(--rxs);display:flex;flex-direction:column;align-items:center;gap:3px;position:relative;}
+.tab .ti{font-size:19px;}
+.tab.active{color:var(--a);}
+.tab.active::after{content:'';position:absolute;bottom:-2px;left:15%;right:15%;height:2.5px;border-radius:2px;background:var(--a);}
+.tab:active{transform:scale(.93);}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:20px;scrollbar-width:none;}
+.content::-webkit-scrollbar{display:none;}
+.view{display:none;}
+.view.active{display:block;animation:fadeUp .22s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+
+/* GRID */
+.grid-list{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 14px 4px;}
+.sec-grid{padding:0 14px 4px;}
+.sec-hdr{padding:10px 4px 6px;display:flex;align-items:center;gap:8px;}
+.sec-icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.sec-title{font-size:10.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--tx3);}
+.sec-count{margin-left:auto;background:var(--bg3);color:var(--tx3);font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;}
+
+/* GRID CARD */
+.grid-card{display:flex;flex-direction:column;align-items:center;padding:12px 8px 10px;background:#fff;border-radius:16px;border:1.5px solid transparent;transition:border-color .12s,background .12s;cursor:pointer;position:relative;overflow:hidden;text-align:center;animation:cardIn .28s ease both;}
+@keyframes cardIn{from{opacity:0;transform:scale(.9) translateY(5px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.grid-card.in-cart{border-color:rgba(22,163,74,.3);background:#f0fdf4;}
+.grid-card:active{transform:scale(.95);}
+.g-icon{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:7px;transition:transform .12s;}
+.grid-card.in-cart .g-icon{transform:scale(1.06);}
+.g-name{font-size:11px;font-weight:600;color:var(--tx);line-height:1.3;margin-bottom:7px;min-height:27px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;width:100%;}
+
+/* QTY */
+.qty-wrap{display:flex;align-items:center;gap:4px;}
+.qty-btn{width:26px;height:26px;border-radius:8px;border:1.5px solid var(--bd);background:var(--bg3);color:var(--tx);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;font-weight:700;transition:var(--sp);flex-shrink:0;user-select:none;}
+.qty-btn.plus{border-color:var(--a);background:rgba(22,163,74,.09);color:var(--a);}
+.qty-btn:active{transform:scale(.78);}
+.qty-btn:disabled{opacity:.28;cursor:default;}
+.qty-val{min-width:18px;text-align:center;font-size:13px;font-weight:800;}
+.qty-val.nz{color:var(--a);}
+@keyframes numUp{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-7px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@keyframes numDown{0%{transform:translateY(0) scale(1)}40%{transform:translateY(7px) scale(1.1)}100%{transform:translateY(0) scale(1)}}
+.qty-val.bu{animation:numUp .28s cubic-bezier(.34,1.56,.64,1);}
+.qty-val.bd{animation:numDown .28s cubic-bezier(.34,1.56,.64,1);}
+
+/* RIPPLE */
+.ripple{position:absolute;border-radius:50%;background:rgba(22,163,74,.22);transform:scale(0);animation:rippleAnim .5s linear;pointer-events:none;}
+@keyframes rippleAnim{to{transform:scale(4);opacity:0;}}
+
+/* CATEGORY COLORS */
+.co{background:rgba(251,146,60,.13)}  /* obst */
+.cv{background:rgba(251,191,36,.13)}  /* vorrat */
+.cb{background:rgba(180,83,9,.12)}    /* backwaren */
+.ck{background:rgba(59,130,246,.12)}  /* kühlung */
+.ct{background:rgba(99,102,241,.12)}  /* tiefkühl */
+.ch{background:rgba(107,114,128,.12)} /* haushalt */
+.cg{background:rgba(14,165,233,.12)}  /* getränke */
+.cs{background:rgba(236,72,153,.12)}  /* süßig */
+.ck2{background:rgba(234,179,8,.13)} /* kasse */
+
+/* LIST CARDS (Shopping tab) */
+.list-sec{padding:0 14px;}
+.product-card{display:flex;align-items:center;padding:11px 12px;background:#fff;border-radius:var(--rsm);margin-bottom:5px;border:1.5px solid transparent;position:relative;overflow:hidden;}
+.product-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;transition:background .12s;}
+.product-card.in-cart{border-color:rgba(22,163,74,.2);background:#f0fdf4;}
+.product-card.in-cart::before{background:var(--a);}
+.product-card.checked{opacity:.42;}
+.icon-bub{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:21px;margin-right:11px;flex-shrink:0;}
+.product-card.checked .icon-bub{filter:grayscale(1);}
+.p-info{flex:1;min-width:0;}
+.p-name{font-size:14px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.product-card.checked .p-name{text-decoration:line-through;color:var(--tx3);}
+.p-sub{font-size:11px;color:var(--tx3);margin-top:1px;}
+/* CHECKBOX – tap target enlarged */
+.check-box{width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
+.check-inner{width:26px;height:26px;border-radius:8px;border:2px solid var(--bd);background:#fff;display:flex;align-items:center;justify-content:center;transition:var(--sp);font-size:13px;pointer-events:none;}
+.check-inner.done{background:var(--a);border-color:var(--a);color:#fff;animation:cPop .32s cubic-bezier(.34,1.56,.64,1);}
+@keyframes cPop{0%{transform:scale(1)}45%{transform:scale(1.3)}100%{transform:scale(1)}}
+
+/* STATS */
+.stats-bar{margin:12px 14px 6px;background:#fff;border-radius:var(--rsm);padding:14px 16px;border:1.5px solid var(--bd);box-shadow:var(--sh);}
+.stats-row{display:flex;justify-content:space-between;margin-bottom:11px;}
+.stat{text-align:center;}
+.stat-val{font-size:22px;font-weight:800;color:var(--a);display:block;}
+.stat-lbl{font-size:9.5px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;}
+.prog-track{height:6px;background:var(--bg3);border-radius:100px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--a),var(--a2));border-radius:100px;transition:width .45s cubic-bezier(.4,0,.2,1);}
+
+/* ═══ REALISTIC SHOPPING CART ═══ */
+.cart-section{margin:0 14px 8px;background:linear-gradient(135deg,#f8fafc,#f1f5f9);border-radius:var(--rsm);padding:14px 14px 16px;border:1.5px solid var(--bd);}
+.cart-label{font-size:9.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--tx3);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.cart-stage{display:flex;justify-content:center;align-items:flex-end;height:168px;position:relative;}
+/* SVG wrapper */
+.cart-wrap{position:relative;width:220px;height:160px;}
+.cart-wrap svg{width:220px;height:160px;overflow:visible;}
+/* Emoji items inside basket */
+.cart-items{
+  position:absolute;
+  /* aligned to basket interior */
+  left:46px;top:22px;
+  width:130px;height:72px;
+  display:flex;flex-wrap:wrap;
+  align-items:center;justify-content:center;
+  gap:2px;padding:6px;
+  overflow:hidden;
+  pointer-events:none;
+}
+.c-item{font-size:17px;line-height:1;animation:popIn .28s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{from{transform:scale(0) rotate(-20deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.c-empty{font-size:11px;color:var(--tx3);text-align:center;width:100%;line-height:1.5;}
+/* wheel spin */
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.wl-group,.wr-group{transform-origin:center;transform-box:fill-box;}
+.do-spin .wl-group{animation:spin .55s ease-out;}
+.do-spin .wr-group{animation:spin .55s ease-out .04s;}
+/* fly emoji */
+.fly-e{position:fixed;pointer-events:none;z-index:9999;font-size:24px;}
+
+/* ACTION BUTTONS */
+.shop-actions{display:flex;gap:8px;padding:6px 14px 4px;}
+.action-btn{flex:1;padding:12px;border:none;border-radius:var(--rsm);font-family:'Sora',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:var(--tr);display:flex;align-items:center;justify-content:center;gap:6px;position:relative;overflow:hidden;}
+.action-btn:active{transform:scale(.96);}
+.a-print{background:#111;color:#fff;}
+.a-clear{background:#fee2e2;color:var(--danger);}
+
+/* EMPTY */
+.empty{text-align:center;padding:55px 20px;}
+.empty-e{font-size:52px;margin-bottom:14px;opacity:.3;}
+.empty-t{font-size:15px;font-weight:700;color:var(--tx3);}
+.empty-s{font-size:12px;color:var(--tx3);margin-top:4px;opacity:.7;}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(3px);z-index:200;align-items:flex-end;justify-content:center;}
+.modal-bg.open{display:flex;animation:fi .18s ease;}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+.modal{background:var(--bg2);border-radius:24px 24px 0 0;padding:22px 20px;width:100%;max-width:480px;animation:su .28s cubic-bezier(.34,1.56,.64,1);padding-bottom:calc(24px + env(safe-area-inset-bottom));}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:36px;height:4px;background:var(--bd);border-radius:100px;margin:-6px auto 16px;}
+.modal-title{font-size:18px;font-weight:800;margin-bottom:6px;}
+.modal-text{color:var(--tx2);font-size:13.5px;margin-bottom:20px;}
+.modal-btns{display:flex;gap:10px;}
+.btn{flex:1;padding:13px;border:none;border-radius:var(--rsm);font-family:'Sora',sans-serif;font-size:13.5px;font-weight:700;cursor:pointer;transition:var(--tr);}
+.btn:active{transform:scale(.96);}
+.btn-c{background:var(--bg3);color:var(--tx2);}
+.btn-d{background:var(--danger);color:#fff;}
+
+/* TOAST */
+.toast{position:fixed;top:calc(16px + env(safe-area-inset-top));left:50%;transform:translateX(-50%) translateY(-70px);background:#111;color:#fff;padding:10px 18px;border-radius:100px;font-size:12.5px;font-weight:600;z-index:300;transition:transform .38s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;box-shadow:var(--shl);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* CONFETTI */
+#confettiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;}
+</style>
+</head>
+<body>
+<div class="print-page" id="printPage"></div>
+<canvas id="confettiCanvas"></canvas>
+
+<div class="app">
+  <div class="header">
+    <div class="header-top">
+      <div class="app-title">Einkauf<span>.</span></div>
+      <div class="icon-btn" id="cartIconBtn">🛒<div class="cart-badge" id="cartBadge">0</div></div>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="search" class="search-input" id="searchInput" placeholder="Produkt suchen…" autocomplete="off">
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-view="products"><span class="ti">🏪</span>Produkte</button>
+    <button class="tab" data-view="categories"><span class="ti">📂</span>Kategorien</button>
+    <button class="tab" data-view="shopping"><span class="ti">✅</span>Einkaufen</button>
+  </div>
+  <div class="chips-wrap" id="chipsWrap"></div>
+
+  <div class="content">
+    <!-- PRODUCTS -->
+    <div class="view active" id="products-view">
+      <div class="grid-list" id="products-list"></div>
+    </div>
+
+    <!-- CATEGORIES -->
+    <div class="view" id="categories-view">
+      <div id="categories-list"></div>
+    </div>
+
+    <!-- SHOPPING -->
+    <div class="view" id="shopping-view">
+      <div class="stats-bar">
+        <div class="stats-row">
+          <div class="stat"><span class="stat-val" id="statTotal">0</span><span class="stat-lbl">Artikel</span></div>
+          <div class="stat"><span class="stat-val" id="statDone">0</span><span class="stat-lbl">Erledigt</span></div>
+          <div class="stat"><span class="stat-val" id="statPct">0%</span><span class="stat-lbl">Fortschritt</span></div>
+        </div>
+        <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      </div>
+
+      <div class="shop-actions">
+        <button class="action-btn a-print" id="printBtn">🖨️ Drucken / PDF</button>
+        <button class="action-btn a-clear" id="clearBtn">🗑️ Alles löschen</button>
+      </div>
+
+      <!-- REALISTIC SVG CART -->
+      <div class="cart-section">
+        <div class="cart-label"><span>🛒</span>Virtueller Einkaufswagen</div>
+        <div class="cart-stage">
+          <div class="cart-wrap" id="cartWrap">
+            <svg viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="gBody" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#dde4ee"/>
+                  <stop offset="100%" stop-color="#bfcad9"/>
+                </linearGradient>
+                <linearGradient id="gSide" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#94a3b8"/>
+                  <stop offset="100%" stop-color="#64748b"/>
+                </linearGradient>
+                <linearGradient id="gRim" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#94a3b8"/>
+                  <stop offset="100%" stop-color="#7c8fa0"/>
+                </linearGradient>
+                <linearGradient id="gHandle" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#64748b"/>
+                  <stop offset="100%" stop-color="#475569"/>
+                </linearGradient>
+                <linearGradient id="gWheelOuter" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#475569"/>
+                  <stop offset="100%" stop-color="#1e293b"/>
+                </linearGradient>
+                <filter id="dropshadow" x="-10%" y="-10%" width="130%" height="140%">
+                  <feDropShadow dx="2" dy="4" stdDeviation="4" flood-color="rgba(0,0,0,.22)"/>
+                </filter>
+                <filter id="rimglow">
+                  <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="rgba(255,255,255,.5)"/>
+                </filter>
+              </defs>
+
+              <!-- ground shadow -->
+              <ellipse cx="110" cy="155" rx="70" ry="8" fill="rgba(0,0,0,.1)"/>
+
+              <!-- ── BASKET BODY ── -->
+              <!-- back face -->
+              <polygon points="45,20 175,20 168,97 52,97"
+                fill="url(#gBody)" stroke="#94a3b8" stroke-width="2"
+                stroke-linejoin="round" filter="url(#dropshadow)"/>
+              <!-- left side -->
+              <polygon points="45,20 52,97 40,104 33,27"
+                fill="url(#gSide)" stroke="#7c8fa3" stroke-width="1.5"/>
+              <!-- right side -->
+              <polygon points="175,20 168,97 180,104 187,27"
+                fill="url(#gSide)" stroke="#7c8fa3" stroke-width="1.5"/>
+              <!-- floor -->
+              <polygon points="52,97 168,97 180,104 40,104"
+                fill="#8899aa" stroke="#64748b" stroke-width="1.5"/>
+
+              <!-- ── WIRE GRID HORIZONTAL ── -->
+              <line x1="46" y1="42" x2="174" y2="42" stroke="#a8b8c8" stroke-width="1.2" opacity=".8"/>
+              <line x1="47" y1="58" x2="173" y2="58" stroke="#a8b8c8" stroke-width="1.2" opacity=".8"/>
+              <line x1="48" y1="74" x2="172" y2="74" stroke="#a8b8c8" stroke-width="1.2" opacity=".8"/>
+              <!-- ── WIRE GRID VERTICAL ── -->
+              <line x1="74"  y1="21" x2="71"  y2="96" stroke="#a8b8c8" stroke-width="1.2" opacity=".7"/>
+              <line x1="110" y1="20" x2="110" y2="97" stroke="#a8b8c8" stroke-width="1.2" opacity=".7"/>
+              <line x1="146" y1="21" x2="149" y2="96" stroke="#a8b8c8" stroke-width="1.2" opacity=".7"/>
+
+              <!-- ── TOP RIM ── -->
+              <rect x="43" y="15" width="134" height="8" rx="4" fill="url(#gRim)" stroke="#7c8fa3" stroke-width="1" filter="url(#rimglow)"/>
+
+              <!-- ── HANDLE ── -->
+              <path d="M82,15 C82,-8 138,-8 138,15" fill="none" stroke="url(#gHandle)" stroke-width="7" stroke-linecap="round"/>
+              <!-- handle highlight -->
+              <path d="M84,15 C84,-5 136,-5 136,15" fill="none" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+
+              <!-- ── AXLE ── -->
+              <rect x="36" y="103" width="148" height="6" rx="3" fill="#475569"/>
+
+              <!-- ── LEFT WHEEL GROUP ── -->
+              <g class="wl-group" id="wlGroup" style="transform-origin:58px 132px">
+                <!-- tyre -->
+                <circle cx="58" cy="132" r="18" fill="#1e293b" stroke="#0f172a" stroke-width="2"/>
+                <!-- rim -->
+                <circle cx="58" cy="132" r="13" fill="url(#gWheelOuter)"/>
+                <!-- hub -->
+                <circle cx="58" cy="132" r="4.5" fill="#94a3b8"/>
+                <!-- spokes -->
+                <line x1="58" y1="119" x2="58" y2="145" stroke="#64748b" stroke-width="2"/>
+                <line x1="45" y1="132" x2="71" y2="132" stroke="#64748b" stroke-width="2"/>
+                <line x1="49" y1="123" x2="67" y2="141" stroke="#64748b" stroke-width="2"/>
+                <line x1="49" y1="141" x2="67" y2="123" stroke="#64748b" stroke-width="2"/>
+                <!-- tyre highlight -->
+                <path d="M46,122 A18,18 0 0,1 70,122" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="3" stroke-linecap="round"/>
+              </g>
+
+              <!-- ── RIGHT WHEEL GROUP ── -->
+              <g class="wr-group" id="wrGroup" style="transform-origin:162px 132px">
+                <circle cx="162" cy="132" r="18" fill="#1e293b" stroke="#0f172a" stroke-width="2"/>
+                <circle cx="162" cy="132" r="13" fill="url(#gWheelOuter)"/>
+                <circle cx="162" cy="132" r="4.5" fill="#94a3b8"/>
+                <line x1="162" y1="119" x2="162" y2="145" stroke="#64748b" stroke-width="2"/>
+                <line x1="149" y1="132" x2="175" y2="132" stroke="#64748b" stroke-width="2"/>
+                <line x1="153" y1="123" x2="171" y2="141" stroke="#64748b" stroke-width="2"/>
+                <line x1="153" y1="141" x2="171" y2="123" stroke="#64748b" stroke-width="2"/>
+                <path d="M150,122 A18,18 0 0,1 174,122" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="3" stroke-linecap="round"/>
+              </g>
+            </svg>
+
+            <!-- Emoji items floating inside the basket -->
+            <div class="cart-items" id="cartItems">
+              <span class="c-empty">Hake Artikel ab ✔</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="list-sec"><div id="shopping-list"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="clearModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Liste leeren?</div>
+    <div class="modal-text">Alle Artikel werden entfernt und Häkchen zurückgesetzt.</div>
+    <div class="modal-btns">
+      <button class="btn btn-c" id="cancelClear">Abbrechen</button>
+      <button class="btn btn-d" id="confirmClear">Leeren</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════ JS ═══════════════ -->
+<script type="module">
+import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+initializeApp({
+  apiKey:"AIzaSyAdnSN7JJmJKBKrjfu6_73kPkCrG1Ha1E4",
+  authDomain:"einkaufliste2-46cdf.firebaseapp.com",
+  databaseURL:"https://einkaufliste2-46cdf-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"einkaufliste2-46cdf",
+  storageBucket:"einkaufliste2-46cdf.firebasestorage.app",
+  messagingSenderId:"565024450733",
+  appId:"1:565024450733:web:bd75e3ca7de58d5cccbe24"
+});
+const db  = getDatabase();
+const DBref = ref(db,'shoppingCart');
+
+/* ═══════════════ CATALOG ═══════════════ */
+const CATALOG=[
+  // Obst & Gemüse
+  {name:"Erdbeeren",            category:"Obst & Gemüse", icon:"🍓"},
+  {name:"Heidelbeeren",         category:"Obst & Gemüse", icon:"🫐"},
+  {name:"Himbeeren",            category:"Obst & Gemüse", icon:"🍒"},
+  {name:"Brokkoli",             category:"Obst & Gemüse", icon:"🥦"},
+  {name:"Champignons",          category:"Obst & Gemüse", icon:"🍄"},
+  {name:"Karfiol",              category:"Obst & Gemüse", icon:"🥦"},
+  {name:"Lauch",                category:"Obst & Gemüse", icon:"🌱"},
+  {name:"Blattsalat",           category:"Obst & Gemüse", icon:"🥬"},
+  {name:"Eisbergsalat",         category:"Obst & Gemüse", icon:"🥬"},
+  {name:"Vogerlsalat",          category:"Obst & Gemüse", icon:"🥬"},
+  {name:"Babyblattspinat",      category:"Obst & Gemüse", icon:"🍃"},
+  {name:"Orangen",              category:"Obst & Gemüse", icon:"🍊"},
+  {name:"Mandarinen",           category:"Obst & Gemüse", icon:"🍊"},
+  {name:"Zitronen",             category:"Obst & Gemüse", icon:"🍋"},
+  {name:"Trauben",              category:"Obst & Gemüse", icon:"🍇"},
+  {name:"Avokado",              category:"Obst & Gemüse", icon:"🥑"},
+  {name:"Kiwi",                 category:"Obst & Gemüse", icon:"🥝"},
+  {name:"Mango",                category:"Obst & Gemüse", icon:"🥭"},
+  {name:"Birnen",               category:"Obst & Gemüse", icon:"🍐"},
+  {name:"Bananen",              category:"Obst & Gemüse", icon:"🍌"},
+  {name:"Zwiebeln",             category:"Obst & Gemüse", icon:"🧅"},
+  {name:"Kartoffeln",           category:"Obst & Gemüse", icon:"🥔"},
+  {name:"Süßkartoffel",         category:"Obst & Gemüse", icon:"🍠"},
+  {name:"Knoblauch",            category:"Obst & Gemüse", icon:"🧄"},
+  {name:"Ingwer",               category:"Obst & Gemüse", icon:"🫚"},
+  {name:"Karotten",             category:"Obst & Gemüse", icon:"🥕"},
+  {name:"Rote Rüben Frisch",    category:"Obst & Gemüse", icon:"🟣"},
+  {name:"Rote Rüben Vorgekocht",category:"Obst & Gemüse", icon:"🟤"},
+  {name:"Paprika",              category:"Obst & Gemüse", icon:"🫑"},
+  {name:"Melanzani",            category:"Obst & Gemüse", icon:"🍆"},
+  {name:"Zuchini",              category:"Obst & Gemüse", icon:"🥒"},
+  {name:"Gurken",               category:"Obst & Gemüse", icon:"🥒"},
+  {name:"Tomaten",              category:"Obst & Gemüse", icon:"🍅"},
+  {name:"Cocktailtomaten",      category:"Obst & Gemüse", icon:"🍅"},
+  // Vorratsschrank
+  {name:"Walnusskerne",         category:"Vorratsschrank", icon:"🌰"},
+  {name:"Cashewkerne",          category:"Vorratsschrank", icon:"🥜"},
+  {name:"Haferflocken grob",    category:"Vorratsschrank", icon:"🥣"},
+  {name:"Haferflocken fein",    category:"Vorratsschrank", icon:"🥣"},
+  {name:"Müsli",                category:"Vorratsschrank", icon:"🥣"},
+  {name:"Toastbrot",            category:"Vorratsschrank", icon:"🍞"},
+  {name:"Kirschmarmelade",      category:"Vorratsschrank", icon:"🍒"},
+  {name:"Marillenmarmelade",    category:"Vorratsschrank", icon:"🍑"},
+  {name:"Powidelmarmelade",     category:"Vorratsschrank", icon:"🍯"},
+  {name:"Erdbeermarmelade",     category:"Vorratsschrank", icon:"🍓"},
+  {name:"Himbeermarmelade",     category:"Vorratsschrank", icon:"🍒"},
+  {name:"Heidelbeermarmelade",  category:"Vorratsschrank", icon:"🫐"},
+  {name:"Honig",                category:"Vorratsschrank", icon:"🍯"},
+  {name:"Honig Quetschi",       category:"Vorratsschrank", icon:"🍯"},
+  {name:"Kräutertee",           category:"Vorratsschrank", icon:"🍵"},
+  {name:"Früchtetee",           category:"Vorratsschrank", icon:"🍵"},
+  {name:"Kaffee",               category:"Vorratsschrank", icon:"☕"},
+  {name:"Dosenbohnen",          category:"Vorratsschrank", icon:"🥫"},
+  {name:"Dosenlinsen",          category:"Vorratsschrank", icon:"🥫"},
+  {name:"Dosenkichererbsen",    category:"Vorratsschrank", icon:"🥫"},
+  {name:"Mais im Glas",         category:"Vorratsschrank", icon:"🌽"},
+  {name:"Weizenvollkornmehl",   category:"Vorratsschrank", icon:"🌾"},
+  {name:"Roggenmehl",           category:"Vorratsschrank", icon:"🌾"},
+  {name:"Dinkelmehl",           category:"Vorratsschrank", icon:"🌾"},
+  {name:"Weizenmehl",           category:"Vorratsschrank", icon:"🌾"},
+  {name:"Dinkelvollkornmehl",   category:"Vorratsschrank", icon:"🌾"},
+  {name:"Weizengrieß",          category:"Vorratsschrank", icon:"🌾"},
+  {name:"Maisgrieß",            category:"Vorratsschrank", icon:"🌽"},
+  {name:"Zucker",               category:"Vorratsschrank", icon:"🧂"},
+  {name:"Rohrzucker",           category:"Vorratsschrank", icon:"🎋"},
+  {name:"Olivenöl",             category:"Vorratsschrank", icon:"🫙"},
+  {name:"Sonneblumenöl",        category:"Vorratsschrank", icon:"🫙"},
+  {name:"Rapsöl",               category:"Vorratsschrank", icon:"🫙"},
+  {name:"Apfelessig",           category:"Vorratsschrank", icon:"🍶"},
+  {name:"Balsamicoessig",       category:"Vorratsschrank", icon:"🍶"},
+  {name:"Kochschokolade",       category:"Vorratsschrank", icon:"🍫"},
+  {name:"Vanillepudding",       category:"Vorratsschrank", icon:"🍮"},
+  {name:"Schokopudding",        category:"Vorratsschrank", icon:"🍮"},
+  {name:"Rosinen",              category:"Vorratsschrank", icon:"🍇"},
+  {name:"Trockenhefe",          category:"Vorratsschrank", icon:"🫧"},
+  {name:"Vanillezucker",        category:"Vorratsschrank", icon:"🧁"},
+  {name:"Staubzucker",          category:"Vorratsschrank", icon:"🤍"},
+  {name:"Knödelbrot",           category:"Vorratsschrank", icon:"🍞"},
+  {name:"Eier",                 category:"Vorratsschrank", icon:"🥚"},
+  {name:"Salz",                 category:"Vorratsschrank", icon:"🧂"},
+  {name:"Pfeffer",              category:"Vorratsschrank", icon:"🌶️"},
+  {name:"Currypulver",          category:"Vorratsschrank", icon:"🍛"},
+  {name:"Paprikapulver",        category:"Vorratsschrank", icon:"🌶️"},
+  {name:"Muskat",               category:"Vorratsschrank", icon:"🌰"},
+  {name:"Zimt",                 category:"Vorratsschrank", icon:"🪵"},
+  {name:"Gewürze",              category:"Vorratsschrank", icon:"🌿"},
+  {name:"Tomatenstücke (Dose)", category:"Vorratsschrank", icon:"🥫"},
+  {name:"Thunfisch",            category:"Vorratsschrank", icon:"🐟"},
+  {name:"Oliven",               category:"Vorratsschrank", icon:"🫒"},
+  {name:"Tomatensauce",         category:"Vorratsschrank", icon:"🥫"},
+  {name:"Spaghetti",            category:"Vorratsschrank", icon:"🍝"},
+  {name:"Vollkornspaghetti",    category:"Vorratsschrank", icon:"🍝"},
+  {name:"Fussili / Spiralnudeln",category:"Vorratsschrank",icon:"🍝"},
+  {name:"Basmatireis / Reis",   category:"Vorratsschrank", icon:"🍚"},
+  // Backwaren
+  {name:"Brot",  category:"Backwaren", icon:"🥖"},
+  {name:"Semmeln",category:"Backwaren",icon:"🥐"},
+  {name:"Zopf",  category:"Backwaren", icon:"🥖"},
+  {name:"Wraps", category:"Backwaren", icon:"🌯"},
+  // Kühlung
+  {name:"Faschiertes",          category:"Kühlung", icon:"🥩"},
+  {name:"Hühnerfleisch",        category:"Kühlung", icon:"🍗"},
+  {name:"Hefe",                 category:"Kühlung", icon:"🫧"},
+  {name:"Gnocchi frisch",       category:"Kühlung", icon:"🫘"},
+  {name:"Hirtenkäse",           category:"Kühlung", icon:"🧀"},
+  {name:"Parmesan",             category:"Kühlung", icon:"🧀"},
+  {name:"Pizzakäse",            category:"Kühlung", icon:"🧀"},
+  {name:"Mozarella",            category:"Kühlung", icon:"🧀"},
+  {name:"Steirischer Bergkäse", category:"Kühlung", icon:"🧀"},
+  {name:"Käsescheiben",         category:"Kühlung", icon:"🧀"},
+  {name:"Topfen",               category:"Kühlung", icon:"🥛"},
+  {name:"Frischkäse",           category:"Kühlung", icon:"🥛"},
+  {name:"Fruchtjoghurt",        category:"Kühlung", icon:"🍓"},
+  {name:"Joghurt",              category:"Kühlung", icon:"🥛"},
+  {name:"Sahne",                category:"Kühlung", icon:"🥛"},
+  {name:"Creme Fraiche",        category:"Kühlung", icon:"🥛"},
+  {name:"Sauerrahm",            category:"Kühlung", icon:"🥛"},
+  {name:"Butter",               category:"Kühlung", icon:"🧈"},
+  {name:"Milch",                category:"Kühlung", icon:"🥛"},
+  // Tiefkühl
+  {name:"Vanilleeis",           category:"Tiefkühl", icon:"🍦"},
+  {name:"Tiefkühlhimbeeren",    category:"Tiefkühl", icon:"🍒"},
+  {name:"Tiefkühlbeeren",       category:"Tiefkühl", icon:"🫐"},
+  {name:"Tiefkühlblattspinat",  category:"Tiefkühl", icon:"🥬"},
+  {name:"Tiefkühlcremespinat",  category:"Tiefkühl", icon:"🥬"},
+  {name:"Tiefkühlgemüse",       category:"Tiefkühl", icon:"🥦"},
+  {name:"Tiefkühlpizza",        category:"Tiefkühl", icon:"🍕"},
+  {name:"Pommes",               category:"Tiefkühl", icon:"🍟"},
+  {name:"Süßkartoffelpommes",   category:"Tiefkühl", icon:"🍠"},
+  {name:"Tiefkühlerbsen",       category:"Tiefkühl", icon:"🫛"},
+  {name:"Tiefkühlkarfiol",      category:"Tiefkühl", icon:"🥦"},
+  {name:"Tiefkühlbrokkoli",     category:"Tiefkühl", icon:"🥦"},
+  // Haushalt
+  {name:"Shampoo",              category:"Haushalt", icon:"🧴"},
+  {name:"Bodylotion",           category:"Haushalt", icon:"🧴"},
+  {name:"Deo",                  category:"Haushalt", icon:"🫧"},
+  {name:"Taschentücher",        category:"Haushalt", icon:"🤧"},
+  {name:"Zahnpasta",            category:"Haushalt", icon:"🪥"},
+  {name:"Zahnbürste",           category:"Haushalt", icon:"🪥"},
+  {name:"Geschirrspülertabs",   category:"Haushalt", icon:"🧼"},
+  {name:"Spülmittel",           category:"Haushalt", icon:"🧼"},
+  {name:"Waschmittel",          category:"Haushalt", icon:"🧺"},
+  {name:"Klopapier",            category:"Haushalt", icon:"🧻"},
+  {name:"Küchenrolle",          category:"Haushalt", icon:"🧻"},
+  {name:"Müllbeutel",           category:"Haushalt", icon:"🗑️"},
+  // Getränke
+  {name:"Wein",       category:"Getränke", icon:"🍷"},
+  {name:"Mineralwasser",category:"Getränke",icon:"💧"},
+  {name:"Sirup",      category:"Getränke", icon:"🧃"},
+  {name:"Cola",       category:"Getränke", icon:"🥤"},
+  {name:"Apfelsaft",  category:"Getränke", icon:"🍎"},
+  {name:"Bier",       category:"Getränke", icon:"🍺"},
+  // Süßigkeiten
+  {name:"Vollmilchschokolade",  category:"Süßigkeiten", icon:"🍫"},
+  {name:"Zartbitterschokolade", category:"Süßigkeiten", icon:"🍫"},
+  {name:"Chips",      category:"Süßigkeiten", icon:"🥨"},
+  {name:"Kekse",      category:"Süßigkeiten", icon:"🍪"},
+  {name:"Gummibärchen",category:"Süßigkeiten",icon:"🐻"},
+  {name:"Müsliriegel",category:"Süßigkeiten", icon:"🍫"},
+  // Kasse
+  {name:"Batterien",  category:"Kasse", icon:"🔋"},
+];
+
+const CAT={
+  "Obst & Gemüse": {cls:"co",  icon:"🌿"},
+  "Vorratsschrank":{cls:"cv",  icon:"🏺"},
+  "Backwaren":     {cls:"cb",  icon:"🥐"},
+  "Kühlung":       {cls:"ck",  icon:"🧊"},
+  "Tiefkühl":      {cls:"ct",  icon:"❄️"},
+  "Haushalt":      {cls:"ch",  icon:"🏠"},
+  "Getränke":      {cls:"cg",  icon:"🥤"},
+  "Süßigkeiten":   {cls:"cs",  icon:"🍬"},
+  "Kasse":         {cls:"ck2", icon:"🛒"},
+};
+const cc = c => CAT[c]?.cls  || 'cv';
+const ci = c => CAT[c]?.icon || '📦';
+
+/* ═══════════════ STATE ═══════════════ */
+let cart = {};
+let search = '', activeCat = '', activeView = 'products';
+
+/* ═══════════════ FIREBASE – ROBUSTE LÖSUNG ════════════════════
+   Fixes:
+   1. pendingSave zu simpel  → pendingWrites Map mit Timeout pro Item
+   2. Race condition (schnelle Taps) → pro-Item schreiben, nicht ganzen Cart
+   3. Mehrere Geräte gleichzeitig → Smart-Merge: Server-Daten mit
+      lokalen Pending-Writes zusammenführen statt überschreiben
+   5. Offline-Cache → onValue merged statt überschreibt; pending Items
+      bleiben bis Firebase-Bestätigung geschützt
+═══════════════════════════════════════════════════════════════ */
+
+// Firebase-Keys dürfen kein . # $ [ ] / enthalten
+// Wir ersetzen sie durch _ und bauen eine bidirektionale Map
+const KEY_TO_NAME = {};
+const NAME_TO_KEY = {};
+CATALOG.forEach(p => {
+  const key = p.name.replace(/[.#$\[\]\/]/g, '_');
+  KEY_TO_NAME[key] = p.name;
+  NAME_TO_KEY[p.name] = key;
+});
+
+// Für jedes Item: eigener Timeout-Handle damit schnelle Taps
+// den Timer korrekt zurücksetzen (Fix #2)
+const pendingWrites = new Map(); // key → timeoutId
+
+function markPending(key){
+  // Reset timer on every write (handles rapid taps)
+  if(pendingWrites.has(key)) clearTimeout(pendingWrites.get(key));
+  const tid = setTimeout(() => pendingWrites.delete(key), 8000);
+  pendingWrites.set(key, tid);
+}
+
+// Smart merge: Server-Stand einspielen, aber pending-Items NICHT überschreiben
+onValue(DBref, snap => {
+  const serverData = snap.val() || {};
+  const merged = {};
+
+  // Server-Items übernehmen, außer wir haben einen laufenden Schreibvorgang
+  for(const [key, val] of Object.entries(serverData)){
+    const name = KEY_TO_NAME[key] || key; // Rückwärts-Kompatibilität mit alten Keys
+    if(pendingWrites.has(key)){
+      // Wir haben gerade selbst geschrieben → lokale Version behalten
+      if(cart[name]) merged[name] = cart[name];
+    } else {
+      if(val && val.qty > 0) merged[name] = val;
+    }
+  }
+
+  // Pending Items die noch nicht auf dem Server sind sichern (Fix #3, #5)
+  for(const key of pendingWrites.keys()){
+    const name = KEY_TO_NAME[key] || key;
+    if(cart[name]) merged[name] = cart[name];
+  }
+
+  cart = merged;
+  renderAll(); updateStats(); updateBadge(); syncCartVisual();
+});
+
+// Pro-Item schreiben statt ganzen Cart (Fix #2, #3, #6)
+function dbSaveItem(name){
+  const key = NAME_TO_KEY[name] || name.replace(/[.#$\[\]\/]/g, '_');
+  markPending(key);
+  const itemRef = ref(db, 'shoppingCart/' + key);
+  if(cart[name]){
+    set(itemRef, { qty: cart[name].qty, checked: cart[name].checked });
+  } else {
+    remove(itemRef);
+  }
+}
+
+/* ═══════════════ CART OPERATIONS ═══════════════ */
+
+// Optimistic qty update: patch only affected cards instantly
+function updateQty(name, qty, isPlus){
+  if(qty > 0) cart[name] = { qty, checked: cart[name]?.checked || false };
+  else        delete cart[name];
+
+  // patch grid cards without re-render
+  document.querySelectorAll(`.grid-card[data-name="${CSS.escape(name)}"]`).forEach(card=>{
+    card.classList.toggle('in-cart', qty > 0);
+    const qv = card.querySelector('.qty-val');
+    if(qv){ qv.textContent = qty; qv.classList.toggle('nz', qty > 0); }
+    const minus = card.querySelector('.qty-btn.minus');
+    if(minus) minus.disabled = (qty === 0);
+  });
+
+  renderShopping();  // re-render shopping list
+  updateStats();
+  updateBadge(isPlus ? 'up' : null);
+  syncCartVisual();
+  dbSaveItem(name);
+}
+
+// Toggle check – this is the function the checkboxes call
+function toggleCheck(name, checkboxEl){
+  if(!cart[name]) return;
+  const wasDone = cart[name].checked;
+  cart[name].checked = !wasDone;
+
+  // Fly animation before DOM rebuild
+  if(!wasDone && checkboxEl){
+    const icon = CATALOG.find(p => p.name === name)?.icon || '🛒';
+    flyToCart(icon, checkboxEl);
+  }
+
+  renderShopping();     // ← re-renders AND re-binds events
+  updateStats();
+  syncCartVisual(!wasDone);
+  dbSaveItem(name);
+
+  if(!wasDone) checkConfetti();
+}
+
+/* ═══════════════ RENDERING ═══════════════ */
+
+function gridCard(p, idx){
+  const it = cart[p.name], qty = it?.qty || 0;
+  return `<div class="grid-card ${qty>0?'in-cart':''}" data-name="${p.name}" style="animation-delay:${idx*22}ms">
+    <div class="g-icon ${cc(p.category)}">${p.icon}</div>
+    <div class="g-name">${p.name}</div>
+    <div class="qty-wrap">
+      <button class="qty-btn minus" data-name="${p.name}" ${qty===0?'disabled':''}>−</button>
+      <span class="qty-val ${qty>0?'nz':''}">${qty}</span>
+      <button class="qty-btn plus"  data-name="${p.name}">+</button>
+    </div>
+  </div>`;
+}
+
+function listCard(p){
+  const it = cart[p.name], qty = it?.qty||0, done = it?.checked||false;
+  return `<div class="product-card ${qty>0?'in-cart':''} ${done?'checked':''}">
+    <div class="icon-bub ${cc(p.category)}">${p.icon}</div>
+    <div class="p-info">
+      <div class="p-name">${p.name}</div>
+      <div class="p-sub">${p.category} · ${qty}×</div>
+    </div>
+    <div class="check-box" data-check="${p.name}">
+      <div class="check-inner ${done?'done':''}">${done?'✓':''}</div>
+    </div>
+  </div>`;
+}
+
+function getFiltered(){
+  let l = CATALOG;
+  if(search)    l = l.filter(p => p.name.toLowerCase().includes(search) || p.category.toLowerCase().includes(search));
+  if(activeCat) l = l.filter(p => p.category === activeCat);
+  return l;
+}
+
+function renderProducts(){
+  const l = getFiltered();
+  const el = document.getElementById('products-list');
+  el.innerHTML = l.length
+    ? l.map((p,i) => gridCard(p,i)).join('')
+    : `<div class="empty" style="grid-column:1/-1"><div class="empty-e">🔍</div><div class="empty-t">Nichts gefunden</div></div>`;
+  bindGridEvents(el);
+}
+
+function renderCategories(){
+  const l = getFiltered(), g = {};
+  l.forEach(p => (g[p.category] = g[p.category]||[]).push(p));
+  const el = document.getElementById('categories-list');
+  if(!Object.keys(g).length){ el.innerHTML=`<div class="empty"><div class="empty-e">📦</div><div class="empty-t">Keine Kategorien</div></div>`; return; }
+  let html='', gi=0;
+  for(const [cat,prods] of Object.entries(g)){
+    html += `<div class="sec-grid">
+      <div class="sec-hdr">
+        <div class="sec-icon ${cc(cat)}">${ci(cat)}</div>
+        <div class="sec-title">${cat}</div>
+        <div class="sec-count">${prods.length}</div>
+      </div>
+      <div class="grid-list" style="padding:0 0 4px">${prods.map(p=>gridCard(p,gi++)).join('')}</div>
+    </div>`;
+  }
+  el.innerHTML = html;
+  bindGridEvents(el);
+}
+
+function renderShopping(){
+  const items = CATALOG.filter(p => cart[p.name]?.qty > 0);
+  const el = document.getElementById('shopping-list');
+  el.innerHTML = items.length
+    ? items.map(p => listCard(p)).join('')
+    : `<div class="empty"><div class="empty-e">🛒</div><div class="empty-t">Liste ist leer</div><div class="empty-s">Produkte im Tab "Produkte" hinzufügen</div></div>`;
+  bindCheckEvents(el); // ← always bind after render
+}
+
+function renderAll(){
+  renderProducts();
+  renderCategories();
+  renderShopping();
+}
+
+/* ═══════════════ EVENT BINDING ═══════════════
+   Split into two: grid (qty) and check (shopping).
+   Both are re-bound after each respective render.
+════════════════════════════════════════════════ */
+
+function bindGridEvents(container){
+  container.querySelectorAll('.qty-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const name = btn.dataset.name;
+      const cur  = cart[name]?.qty || 0;
+      const isPlus = btn.classList.contains('plus');
+      const newQty = isPlus ? cur+1 : Math.max(0, cur-1);
+
+      // number bounce
+      const qv = btn.closest('.qty-wrap')?.querySelector('.qty-val');
+      if(qv){
+        qv.classList.remove('bu','bd');
+        void qv.offsetWidth;
+        qv.classList.add(isPlus ? 'bu' : 'bd');
+      }
+      updateQty(name, newQty, isPlus);
+    });
+  });
+  // ripple on grid cards
+  container.querySelectorAll('.grid-card').forEach(card => {
+    card.addEventListener('click', e => addRipple(card, e));
+  });
+}
+
+function bindCheckEvents(container){
+  container.querySelectorAll('.check-box').forEach(cb => {
+    cb.addEventListener('click', e => {
+      e.stopPropagation();
+      toggleCheck(cb.dataset.check, cb);
+    });
+  });
+}
+
+/* ═══════════════ VISUAL HELPERS ═══════════════ */
+
+function updateStats(){
+  const v = Object.values(cart), t = v.length, d = v.filter(i=>i.checked).length;
+  const p = t ? Math.round(d/t*100) : 0;
+  document.getElementById('statTotal').textContent = t;
+  document.getElementById('statDone').textContent  = d;
+  document.getElementById('statPct').textContent   = p+'%';
+  document.getElementById('progFill').style.width  = p+'%';
+}
+
+function updateBadge(dir){
+  const n = Object.keys(cart).length;
+  const b = document.getElementById('cartBadge');
+  b.style.display = n ? 'flex' : 'none';
+  b.textContent   = n > 99 ? '99+' : n;
+  if(dir === 'up'){
+    b.classList.remove('wobble'); void b.offsetWidth; b.classList.add('wobble');
+    setTimeout(()=>b.classList.remove('wobble'), 540);
+  }
+}
+
+function syncCartVisual(spin){
+  const el = document.getElementById('cartItems'); if(!el) return;
+  const checked = CATALOG.filter(p => cart[p.name]?.checked);
+  el.innerHTML = checked.length
+    ? checked.slice(-12).map(p=>`<span class="c-item">${p.icon}</span>`).join('')
+    : '<span class="c-empty">Hake Artikel ab ✔</span>';
+  if(spin){
+    const w = document.getElementById('cartWrap');
+    if(w){ w.classList.remove('do-spin'); void w.offsetWidth; w.classList.add('do-spin');
+      setTimeout(()=>w.classList.remove('do-spin'), 600); }
+  }
+}
+
+// Emoji flies from checkbox to cart
+function flyToCart(emoji, fromEl){
+  const stage = document.getElementById('cartWrap'); if(!stage) return;
+  const fr = fromEl.getBoundingClientRect();
+  const sr = stage.getBoundingClientRect();
+  const div = document.createElement('div');
+  div.className = 'fly-e'; div.textContent = emoji;
+  div.style.cssText = `left:${fr.left+fr.width/2}px;top:${fr.top}px;`;
+  document.body.appendChild(div);
+  const tx = sr.left + sr.width*0.5, ty = sr.top + sr.height*0.52;
+  div.animate([
+    {left:fr.left+'px', top:fr.top+'px', fontSize:'24px', opacity:1, transform:'scale(1)'},
+    {left:((fr.left+tx)/2)+'px', top:(fr.top-30)+'px', fontSize:'18px', opacity:.85, transform:'scale(.8) rotate(-10deg)'},
+    {left:tx+'px', top:ty+'px', fontSize:'6px', opacity:0, transform:'scale(.05) rotate(-25deg)'}
+  ], {duration:650, easing:'cubic-bezier(.4,0,.6,1)', fill:'forwards'}).onfinish = ()=>div.remove();
+}
+
+function addRipple(el, e){
+  const r = el.getBoundingClientRect();
+  const x = (e.clientX||r.left+r.width/2)-r.left, y=(e.clientY||r.top+r.height/2)-r.top;
+  const sz = Math.max(r.width,r.height)*1.2;
+  const rp = document.createElement('span'); rp.className='ripple';
+  rp.style.cssText=`width:${sz}px;height:${sz}px;left:${x-sz/2}px;top:${y-sz/2}px;`;
+  el.appendChild(rp); setTimeout(()=>rp.remove(), 560);
+}
+
+/* ═══════════════ CONFETTI ═══════════════ */
+function checkConfetti(){
+  const v = Object.values(cart);
+  if(v.length > 0 && v.every(i=>i.checked)){ launchConfetti(); showToast('🎉 Alles erledigt!'); }
+}
+function launchConfetti(){
+  const cv = document.getElementById('confettiCanvas');
+  cv.style.display='block'; const ctx=cv.getContext('2d');
+  cv.width=window.innerWidth; cv.height=window.innerHeight;
+  const cols=['#16a34a','#22c55e','#facc15','#f87171','#60a5fa','#c084fc','#fb923c'];
+  const ps = Array.from({length:130}, ()=>({
+    x:Math.random()*cv.width, y:-10,
+    w:5+Math.random()*8, h:9+Math.random()*8,
+    color:cols[Math.random()*cols.length|0],
+    vx:(Math.random()-.5)*6, vy:2+Math.random()*5,
+    rot:Math.random()*360, rv:(Math.random()-.5)*10, op:1
+  }));
+  let fr;
+  function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ps.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy; p.vy+=.12; p.rot+=p.rv;
+      if(p.y>cv.height*.65) p.op-=.022;
+      ctx.save(); ctx.globalAlpha=Math.max(0,p.op); ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle=p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
+    });
+    if(ps.some(p=>p.op>0)) fr=requestAnimationFrame(draw);
+    else cv.style.display='none';
+  }
+  draw(); setTimeout(()=>{ cancelAnimationFrame(fr); cv.style.display='none'; }, 3800);
+}
+
+/* ═══════════════ CHIPS ═══════════════ */
+(function(){
+  const cats = [...new Set(CATALOG.map(p=>p.category))];
+  const wrap = document.getElementById('chipsWrap');
+  wrap.innerHTML = `<button class="chip active" data-cat="">Alle</button>` +
+    cats.map(c=>`<button class="chip" data-cat="${c}">${ci(c)} ${c}</button>`).join('');
+  wrap.querySelectorAll('.chip').forEach(ch=>{
+    ch.addEventListener('click', ()=>{
+      activeCat = ch.dataset.cat;
+      wrap.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+      ch.classList.add('active');
+      renderProducts(); renderCategories();
+    });
+  });
+})();
+
+/* ═══════════════ TABS ═══════════════ */
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    activeView = tab.dataset.view;
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById(`${activeView}-view`).classList.add('active');
+    document.getElementById('chipsWrap').style.display = activeView==='products' ? 'flex' : 'none';
+    if(activeView==='shopping') syncCartVisual();
+  });
+});
+
+document.getElementById('searchInput').addEventListener('input', e=>{
+  search = e.target.value.toLowerCase().trim();
+  renderProducts(); renderCategories();
+});
+document.getElementById('cartIconBtn').addEventListener('click', ()=>document.querySelector('[data-view="shopping"]').click());
+
+/* ═══════════════ CLEAR ═══════════════ */
+document.getElementById('clearBtn').addEventListener('click', ()=>document.getElementById('clearModal').classList.add('open'));
+document.getElementById('cancelClear').addEventListener('click', ()=>document.getElementById('clearModal').classList.remove('open'));
+document.getElementById('confirmClear').addEventListener('click', ()=>{
+  // Alle pending-Writes canceln damit onValue nicht revertiert
+  for(const tid of pendingWrites.values()) clearTimeout(tid);
+  pendingWrites.clear();
+  cart = {};
+  remove(DBref);
+  renderAll(); updateStats(); updateBadge(); syncCartVisual();
+  document.getElementById('clearModal').classList.remove('open');
+  showToast('🗑️ Liste geleert');
+});
+document.getElementById('clearModal').addEventListener('click', function(e){ if(e.target===this) this.classList.remove('open'); });
+
+/* ═══════════════ PRINT ═══════════════ */
+document.getElementById('printBtn').addEventListener('click', ()=>{
+  const items = CATALOG.filter(p=>cart[p.name]?.qty>0).map(p=>({...p,...cart[p.name]}));
+  if(!items.length){ showToast('⚠️ Liste ist leer!'); return; }
+  const total=items.length, done=items.filter(i=>i.checked).length, pct=total?Math.round(done/total*100):0;
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('de-AT',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const catOrder=[...new Set(CATALOG.map(p=>p.category))];
+  const g={};
+  items.forEach(p=>(g[p.category]=g[p.category]||[]).push(p));
+  let tables='';
+  catOrder.forEach(cat=>{
+    if(!g[cat]) return;
+    tables+=`<div class="print-cat-title">${ci(cat)} ${cat}</div>
+    <table><thead><tr><th></th><th>Produkt</th><th class="c-chk">✓</th><th class="c-qty">Menge</th></tr></thead><tbody>`+
+    g[cat].map(p=>`<tr><td class="c-icon">${p.icon}</td><td>${p.name}</td>
+      <td class="c-chk"><span class="chk-circle ${p.checked?'chk-done':''}"></span></td>
+      <td class="c-qty">${p.qty}×</td></tr>`).join('')+`</tbody></table>`;
+  });
+  document.getElementById('printPage').innerHTML=`
+    <div class="print-header"><div class="print-logo">Einkaufsliste</div><div class="print-meta">${dateStr}<br>Einkauf-App</div></div>
+    <div class="print-summary">
+      <div class="print-summary-box"><strong>${total}</strong><span>Artikel</span></div>
+      <div class="print-summary-box"><strong>${done}</strong><span>Erledigt</span></div>
+      <div class="print-summary-box"><strong>${pct}%</strong><span>Fortschritt</span></div>
+    </div>${tables}
+    <div class="print-footer"><span>Einkauf-App</span><span>Gedruckt: ${now.toLocaleString('de-AT')}</span></div>`;
+  setTimeout(()=>window.print(), 80);
+});
+
+/* ═══════════════ TOAST ═══════════════ */
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+/* ═══════════════ INIT ═══════════════ */
+renderAll();
+</script>
+</body>
+</html>
